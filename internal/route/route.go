@@ -6,7 +6,7 @@ import (
 
 	"google.golang.org/grpc"
 
-	"skeleton/internal/pkg/db/redis"
+	"lms-class-service/internal/pkg/db/redis"
 )
 
 // GrpcRoute func

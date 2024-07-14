@@ -11,11 +11,11 @@ import (
 	_ "github.com/lib/pq"
 	"google.golang.org/grpc"
 
-	"skeleton/internal/config"
-	"skeleton/internal/middleware"
-	"skeleton/internal/pkg/db/postgres"
-	"skeleton/internal/pkg/db/redis"
-	"skeleton/internal/route"
+	"lms-class-service/internal/config"
+	"lms-class-service/internal/middleware"
+	"lms-class-service/internal/pkg/db/postgres"
+	"lms-class-service/internal/pkg/db/redis"
+	"lms-class-service/internal/route"
 )
 
 const defaultPort = "8000"

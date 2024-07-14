@@ -1,4 +1,4 @@
-module skeleton
+module lms-class-service
 
 go 1.20
 

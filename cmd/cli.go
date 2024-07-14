@@ -8,9 +8,9 @@ import (
 
 	_ "github.com/lib/pq"
 
-	"skeleton/internal/config"
-	"skeleton/internal/pkg/db/postgres"
-	"skeleton/internal/scheme"
+	"lms-class-service/internal/config"
+	"lms-class-service/internal/pkg/db/postgres"
+	"lms-class-service/internal/scheme"
 )
 
 func main() {
