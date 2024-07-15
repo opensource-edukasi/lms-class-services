@@ -47,8 +47,8 @@ func main() {
 	// create redis cache connection
 	cache, err := redis.NewCache(context.Background(), os.Getenv("REDIS_ADDRESS"), os.Getenv("REDIS_PASSWORD"), 24*time.Hour)
 	if err != nil {
-		// log.Fatalf("cannot create redis connection: %v", err)
-		// return
+		log.Fatalf("cannot create redis connection: %v", err)
+		return
 	}
 	log.Print("connecting to redis cache")
 
