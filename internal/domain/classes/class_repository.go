@@ -16,7 +16,7 @@ type ClassRepository struct {
 // List classes with pagination
 func (r *ClassRepository) List(ctx context.Context, limit, offset uint32, keyword, orderBy, sort string) ([]*classesPb.Class, uint32, error) {
 	query := `
-		SELECT id, university_id, university_name, faculty_id, faculty_name,
+		SELECT id, university_id, university_name, COALESCE(faculty_id::text, ''), COALESCE(faculty_name, ''),
 			programme_id, programme_name, code, name,
 			COALESCE(updated_by::text, ''), updated_at, created_at
 		FROM classes
@@ -60,7 +60,7 @@ func (r *ClassRepository) List(ctx context.Context, limit, offset uint32, keywor
 // Get class by ID
 func (r *ClassRepository) Get(ctx context.Context, id string) (*classesPb.Class, error) {
 	query := `
-		SELECT id, university_id, university_name, faculty_id, faculty_name,
+		SELECT id, university_id, university_name, COALESCE(faculty_id::text, ''), COALESCE(faculty_name, ''),
 			programme_id, programme_name, code, name,
 			COALESCE(updated_by::text, ''), updated_at, created_at
 		FROM classes WHERE id = $1
@@ -85,7 +85,7 @@ func (r *ClassRepository) Create(ctx context.Context, class *classesPb.Class) er
 	query := `
 		INSERT INTO classes (university_id, university_name, faculty_id, faculty_name,
 			programme_id, programme_name, code, name, updated_by)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+		VALUES ($1, $2, NULLIF($3, '')::uuid, NULLIF($4, ''), $5, $6, $7, $8, NULLIF($9, '')::uuid)
 		RETURNING id, updated_at, created_at
 	`
 
@@ -100,9 +100,9 @@ func (r *ClassRepository) Create(ctx context.Context, class *classesPb.Class) er
 func (r *ClassRepository) Update(ctx context.Context, class *classesPb.Class) error {
 	query := `
 		UPDATE classes SET
-			university_id = $1, university_name = $2, faculty_id = $3, faculty_name = $4,
+			university_id = $1, university_name = $2, faculty_id = NULLIF($3, '')::uuid, faculty_name = NULLIF($4, ''),
 			programme_id = $5, programme_name = $6, code = $7, name = $8,
-			updated_by = $9, updated_at = NOW()
+			updated_by = NULLIF($9, '')::uuid, updated_at = NOW()
 		WHERE id = $10
 	`
 

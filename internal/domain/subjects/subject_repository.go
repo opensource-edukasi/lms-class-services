@@ -16,7 +16,7 @@ type SubjectRepository struct {
 // List subjects with pagination
 func (r *SubjectRepository) List(ctx context.Context, limit, offset uint32, keyword, orderBy, sort string) ([]*subjectsPb.Subject, uint32, error) {
 	query := `
-		SELECT id, university_id, university_name, faculty_id, faculty_name, 
+		SELECT id, university_id, university_name, COALESCE(faculty_id::text, ''), COALESCE(faculty_name, ''), 
 			programme_id, programme_name, code, name, sks, default_semester,
 			COALESCE(updated_by::text, ''), updated_at, created_at
 		FROM subjects
@@ -62,7 +62,7 @@ func (r *SubjectRepository) List(ctx context.Context, limit, offset uint32, keyw
 // Get subject by ID with topics
 func (r *SubjectRepository) Get(ctx context.Context, id string) (*subjectsPb.Subject, error) {
 	query := `
-		SELECT id, university_id, university_name, faculty_id, faculty_name,
+		SELECT id, university_id, university_name, COALESCE(faculty_id::text, ''), COALESCE(faculty_name, ''),
 			programme_id, programme_name, code, name, sks, default_semester,
 			COALESCE(updated_by::text, ''), updated_at, created_at
 		FROM subjects WHERE id = $1
@@ -108,7 +108,7 @@ func (r *SubjectRepository) Create(ctx context.Context, subject *subjectsPb.Subj
 	query := `
 		INSERT INTO subjects (university_id, university_name, faculty_id, faculty_name,
 			programme_id, programme_name, code, name, sks, default_semester, updated_by)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+		VALUES ($1, $2, NULLIF($3, '')::uuid, NULLIF($4, ''), $5, $6, $7, $8, $9, $10, NULLIF($11, '')::uuid)
 		RETURNING id, updated_at, created_at
 	`
 
@@ -124,7 +124,7 @@ func (r *SubjectRepository) Create(ctx context.Context, subject *subjectsPb.Subj
 func (r *SubjectRepository) CreateTopic(ctx context.Context, topic *subjectsPb.TopicSubject) error {
 	query := `
 		INSERT INTO topic_subjects (subject_id, name, updated_by)
-		VALUES ($1, $2, $3)
+		VALUES ($1, $2, NULLIF($3, '')::uuid)
 		RETURNING id, updated_at, created_at
 	`
 
@@ -137,9 +137,9 @@ func (r *SubjectRepository) CreateTopic(ctx context.Context, topic *subjectsPb.T
 func (r *SubjectRepository) Update(ctx context.Context, subject *subjectsPb.Subject) error {
 	query := `
 		UPDATE subjects SET 
-			university_id = $1, university_name = $2, faculty_id = $3, faculty_name = $4,
+			university_id = $1, university_name = $2, faculty_id = NULLIF($3, '')::uuid, faculty_name = NULLIF($4, ''),
 			programme_id = $5, programme_name = $6, code = $7, name = $8,
-			sks = $9, default_semester = $10, updated_by = $11, updated_at = NOW()
+			sks = $9, default_semester = $10, updated_by = NULLIF($11, '')::uuid, updated_at = NOW()
 		WHERE id = $12
 	`
 
