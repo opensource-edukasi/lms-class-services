@@ -1,0 +1,68 @@
+syntax = "proto3";
+package subjects;
+
+option go_package = "lms-class-service/pb/subjects;subjects";
+
+import "generic/generic_message.proto";
+
+message Subject {
+    string id = 1;
+    string university_id = 2;
+    string university_name = 3;
+    string faculty_id = 4;
+    string faculty_name = 5;
+    string programme_id = 6;
+    string programme_name = 7;
+    string code = 8;
+    string name = 9;
+    int32 sks = 10;
+    int32 default_semester = 11;
+    string updated_by = 12;
+    string updated_at = 13;
+    string created_at = 14;
+    repeated TopicSubject topics = 15;
+}
+
+message TopicSubject {
+    string id = 1;
+    string subject_id = 2;
+    string name = 3;
+    string updated_by = 4;
+    string updated_at = 5;
+    string created_at = 6;
+}
+
+message SubjectList {
+    repeated Subject subjects = 1;
+    uint32 count = 2;
+}
+
+message SubjectListInput {
+    lms_class_services.Pagination pagination = 1;
+}
+
+message SubjectInput {
+    string university_id = 1;
+    string university_name = 2;
+    string faculty_id = 3;
+    string faculty_name = 4;
+    string programme_id = 5;
+    string programme_name = 6;
+    string code = 7;
+    string name = 8;
+    int32 sks = 9;
+    int32 default_semester = 10;
+    repeated TopicSubjectInput topics = 11;
+}
+
+message TopicSubjectInput {
+    string name = 1;
+}
+
+service SubjectService {
+    rpc List(SubjectListInput) returns (SubjectList);
+    rpc Get(lms_class_services.Id) returns (Subject);
+    rpc Create(SubjectInput) returns (Subject);
+    rpc Update(Subject) returns (Subject);
+    rpc Delete(lms_class_services.Id) returns (lms_class_services.BoolMessage);
+}
