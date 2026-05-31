@@ -154,10 +154,10 @@ type SubjectClassRepository struct {
 // List subject classes
 func (r *SubjectClassRepository) List(ctx context.Context, classID string, limit, offset uint32, keyword, orderBy, sort string) ([]*classesPb.SubjectClass, uint32, error) {
 	query := `
-		SELECT id, subject_id, class_id, period, teacher_id, teacher_name, name,
+		SELECT id, subject_id, class_id, period, COALESCE(teacher_id::text, ''), teacher_name, name,
 			timetable_day, timetable_time::text, COALESCE(updated_by::text, ''), updated_at, created_at
 		FROM subjects_classes
-		WHERE class_id = $1 AND name ILIKE $2
+		WHERE ($1 = '' OR class_id = NULLIF($1, '')::uuid) AND name ILIKE $2
 		ORDER BY ` + orderBy + ` ` + sort + `
 		LIMIT $3 OFFSET $4
 	`
@@ -184,7 +184,7 @@ func (r *SubjectClassRepository) List(ctx context.Context, classID string, limit
 		subjectClasses = append(subjectClasses, &sc)
 	}
 
-	countQuery := `SELECT COUNT(*) FROM subjects_classes WHERE class_id = $1 AND name ILIKE $2`
+	countQuery := `SELECT COUNT(*) FROM subjects_classes WHERE ($1 = '' OR class_id = NULLIF($1, '')::uuid) AND name ILIKE $2`
 	var count uint32
 	err = r.Db.QueryRowContext(ctx, countQuery, classID, searchKeyword).Scan(&count)
 	if err != nil {
@@ -197,7 +197,7 @@ func (r *SubjectClassRepository) List(ctx context.Context, classID string, limit
 // Get subject class by ID
 func (r *SubjectClassRepository) Get(ctx context.Context, id string) (*classesPb.SubjectClass, error) {
 	query := `
-		SELECT id, subject_id, class_id, period, teacher_id, teacher_name, name,
+		SELECT id, subject_id, class_id, period, COALESCE(teacher_id::text, ''), teacher_name, name,
 			timetable_day, timetable_time::text, COALESCE(updated_by::text, ''), updated_at, created_at
 		FROM subjects_classes WHERE id = $1
 	`
@@ -220,7 +220,7 @@ func (r *SubjectClassRepository) Get(ctx context.Context, id string) (*classesPb
 func (r *SubjectClassRepository) Create(ctx context.Context, sc *classesPb.SubjectClass) error {
 	query := `
 		INSERT INTO subjects_classes (subject_id, class_id, period, teacher_id, teacher_name, name, timetable_day, timetable_time, updated_by)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8::time, $9)
+		VALUES ($1, $2, $3, NULLIF($4, '')::uuid, $5, $6, $7, NULLIF($8, '')::time, NULLIF($9, '')::uuid)
 		RETURNING id, updated_at, created_at
 	`
 
@@ -235,9 +235,9 @@ func (r *SubjectClassRepository) Create(ctx context.Context, sc *classesPb.Subje
 func (r *SubjectClassRepository) Update(ctx context.Context, sc *classesPb.SubjectClass) error {
 	query := `
 		UPDATE subjects_classes SET
-			subject_id = $1, class_id = $2, period = $3, teacher_id = $4,
-			teacher_name = $5, name = $6, timetable_day = $7, timetable_time = $8::time,
-			updated_by = $9, updated_at = NOW()
+			subject_id = $1, class_id = $2, period = $3, teacher_id = NULLIF($4, '')::uuid,
+			teacher_name = $5, name = $6, timetable_day = $7, timetable_time = NULLIF($8, '')::time,
+			updated_by = NULLIF($9, '')::uuid, updated_at = NOW()
 		WHERE id = $10
 	`
 
