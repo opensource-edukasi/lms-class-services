@@ -1,0 +1,10 @@
+.git
+.gitignore
+.env
+.env.*
+README.md
+LICENSE
+makefile
+proto/
+*.md
+tmp/
